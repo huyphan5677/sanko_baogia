@@ -971,8 +971,8 @@
     <script>
         // Configuration for Google Drive
         const GOOGLE_DRIVE_CONFIG = {
-            // Replace these URLs with your actual Google Drive sharing URLs
-            PRODUCTS_DATA_URL: 'https://drive.google.com/file/d/1ZTFOUdqgkHmEeZ0rSu0DslQ2r9TT3OaM/view?usp=drive_link',
+            // File ID for products data JavaScript file
+            PRODUCTS_DATA_FILE_ID: '1ZTFOUdqgkHmEeZ0rSu0DslQ2r9TT3OaM',
             IMAGES_FOLDER_ID: '1Bta6BA18DvI1VynXX7SluCb7ZNkSr70k', // ID của folder chứa hình ảnh
             API_KEY: 'AIzaSyC5cCJ47c7mSJSO2cRxplHGt4zrDZwFbN0', // Google Drive API Key for auto-mapping
             IMAGES_BASE_URL: 'https://lh3.googleusercontent.com/d/',
@@ -993,110 +993,71 @@
                 document.getElementById('loadingMessage').style.display = 'block';
                 document.getElementById('loadingMessage').textContent = 'Đang tải dữ liệu từ Google Drive...';
                 
-                // Add timestamp to prevent caching
-                const timestamp = new Date().getTime();
-                const url = `${GOOGLE_DRIVE_CONFIG.PRODUCTS_DATA_URL}&t=${timestamp}`;
+                // Use Google Drive API to get file content
+                const apiUrl = `https://www.googleapis.com/drive/v3/files/${GOOGLE_DRIVE_CONFIG.PRODUCTS_DATA_FILE_ID}?alt=media&key=${GOOGLE_DRIVE_CONFIG.API_KEY}`;
+                const response = await fetch(apiUrl);
                 
-                const response = await fetch(url);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`Không thể tải dữ liệu: ${response.status}`);
                 }
                 
                 const scriptText = await response.text();
                 
-                // Execute the script to get productsData
-                eval(scriptText);
+                // Execute script and make data global
+                const modifiedScript = scriptText.replace(/const\s+productsData\s*=/, 'window.productsData =');
+                window.eval(modifiedScript);
                 
-                if (typeof productsData !== 'undefined') {
-                    allProductsData = productsData;
-                    filteredProductsData = [...allProductsData];
-                    populateFilters();
-                    displayProducts(filteredProductsData);
-                    updateUI();
-                    renderCustomProducts();
-                    document.getElementById('loadingMessage').style.display = 'none';
-                } else {
-                    throw new Error('Products data not found in the loaded script');
+                if (!window.productsData || !Array.isArray(window.productsData) || window.productsData.length === 0) {
+                    throw new Error('Dữ liệu sản phẩm không hợp lệ');
                 }
+                
+                allProductsData = window.productsData;
+                filteredProductsData = [...allProductsData];
+                populateFilters();
+                displayProducts(filteredProductsData);
+                updateUI();
+                renderCustomProducts();
+                document.getElementById('loadingMessage').style.display = 'none';
+                
             } catch (error) {
                 document.getElementById('loadingMessage').textContent = 
-                    'Lỗi khi tải dữ liệu. Vui lòng kiểm tra kết nối mạng và thử lại.';
-                
-                // Fallback to local file if available
-                try {
-                    const fallbackScript = document.createElement('script');
-                    fallbackScript.src = 'products_data.js';
-                    fallbackScript.onload = function() {
-                        if (typeof productsData !== 'undefined') {
-                            allProductsData = productsData;
-                            filteredProductsData = [...allProductsData];
-                            populateFilters();
-                            displayProducts(filteredProductsData);
-                            updateUI();
-                            renderCustomProducts();
-                            document.getElementById('loadingMessage').style.display = 'none';
-                        }
-                    };
-                    fallbackScript.onerror = function() {
-                        document.getElementById('loadingMessage').textContent = 
-                            'Không thể tải dữ liệu. Vui lòng liên hệ quản trị viên.';
-                    };
-                    document.head.appendChild(fallbackScript);
-                } catch (fallbackError) {
-                    // Fallback failed silently
-                }
+                    `Lỗi: ${error.message}. Vui lòng thử lại.`;
             }
         }
 
-        // Function to load image IDs from Google Drive API with integrated caching
+        // Function to load image IDs from Google Drive API
         async function loadImageIdsWithAPI(useCache = true) {
-            try {
-                // Check cache first if requested
-                if (useCache) {
-                    const cached = localStorage.getItem('sanko_image_cache');
-                    if (cached) {
-                        const cacheData = JSON.parse(cached);
-                        if (Date.now() - cacheData.timestamp < GOOGLE_DRIVE_CONFIG.CACHE_EXPIRY) {
-                            GOOGLE_DRIVE_CONFIG.IMAGE_IDS_CACHE = cacheData.imageIds;
-                            return;
-                        }
+            // Check cache first
+            if (useCache) {
+                const cached = localStorage.getItem('sanko_image_cache');
+                if (cached) {
+                    const cacheData = JSON.parse(cached);
+                    if (Date.now() - cacheData.timestamp < GOOGLE_DRIVE_CONFIG.CACHE_EXPIRY) {
+                        GOOGLE_DRIVE_CONFIG.IMAGE_IDS_CACHE = cacheData.imageIds;
+                        return;
                     }
                 }
-
-
-                
-                const apiUrl = `https://www.googleapis.com/drive/v3/files?q='${GOOGLE_DRIVE_CONFIG.IMAGES_FOLDER_ID}'+in+parents&key=${GOOGLE_DRIVE_CONFIG.API_KEY}&fields=files(id,name)`;
-                
-                const response = await fetch(apiUrl);
-                if (!response.ok) {
-                    throw new Error(`API request failed: ${response.status} - ${response.statusText}`);
-                }
-                
+            }
+            
+            const apiUrl = `https://www.googleapis.com/drive/v3/files?q='${GOOGLE_DRIVE_CONFIG.IMAGES_FOLDER_ID}'+in+parents&key=${GOOGLE_DRIVE_CONFIG.API_KEY}&fields=files(id,name)`;
+            const response = await fetch(apiUrl);
+            
+            if (response.ok) {
                 const data = await response.json();
-                
-                if (!data.files || data.files.length === 0) {
-                    return;
+                if (data.files) {
+                    data.files.forEach(file => {
+                        const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
+                        GOOGLE_DRIVE_CONFIG.IMAGE_IDS_CACHE[nameWithoutExt] = file.id;
+                    });
+                    
+                    // Cache results
+                    if (useCache) {
+                        localStorage.setItem('sanko_image_cache', JSON.stringify({
+                            imageIds: GOOGLE_DRIVE_CONFIG.IMAGE_IDS_CACHE,
+                            timestamp: Date.now()
+                        }));
+                    }
                 }
-                
-                // Map file names to IDs (remove file extensions)
-                data.files.forEach(file => {
-                    const nameWithoutExt = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
-                    GOOGLE_DRIVE_CONFIG.IMAGE_IDS_CACHE[nameWithoutExt] = file.id;
-                });
-                
-
-
-                // Cache the results if caching is enabled
-                if (useCache) {
-                    const cacheData = {
-                        imageIds: GOOGLE_DRIVE_CONFIG.IMAGE_IDS_CACHE,
-                        timestamp: Date.now()
-                    };
-                    localStorage.setItem('sanko_image_cache', JSON.stringify(cacheData));
-                }
-                
-            } catch (error) {
-                throw error;
             }
         }
 
@@ -1138,8 +1099,8 @@
                 return url;
             }
             
-            // Fallback to local images
-            return `images/${productName}.jpg`;
+            // Return placeholder when image not found on Google Drive
+            return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
         }
         
         // Helper function to get file ID only (for backward compatibility)
@@ -1162,28 +1123,19 @@
             refreshBtn.textContent = '🔄 Đang tải...';
             
             try {
-                // Clear image cache to force reload
                 localStorage.removeItem('sanko_image_cache');
                 GOOGLE_DRIVE_CONFIG.IMAGE_IDS_CACHE = {};
-                
-                // Reload image IDs
-                await loadImageIdsWithAPI(false); // Force reload without cache
-                
-                // Reload products data
+                await loadImageIdsWithAPI(false);
                 await loadProductsData();
-                
                 refreshBtn.textContent = '✅ Đã cập nhật';
-                setTimeout(() => {
-                    refreshBtn.textContent = '🔄 Refresh';
-                    refreshBtn.disabled = false;
-                }, 2000);
             } catch (error) {
                 refreshBtn.textContent = '❌ Lỗi';
-                setTimeout(() => {
-                    refreshBtn.textContent = '🔄 Refresh';
-                    refreshBtn.disabled = false;
-                }, 2000);
             }
+            
+            setTimeout(() => {
+                refreshBtn.textContent = '🔄 Refresh';
+                refreshBtn.disabled = false;
+            }, 2000);
         }
 
 
@@ -1477,8 +1429,7 @@
                     <td class="image-cell">
                         <img src="${getImageUrl(product.name)}" 
                              alt="${product.name}"
-                             class="product-image-small"
-                             onerror="this.src='images/${product.name}.jpg'; this.onerror=null;" />
+                             class="product-image-small" />
                     </td>
                     <td><span class="type-badge">${product.type}</span></td>
                     <td class="module-name-cell">${product.name}</td>
