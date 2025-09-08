@@ -15,8 +15,8 @@
 
         body {
             font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
+            background-color: #F7F9FB;
+            color: #2C3E47;
         }
 
         .container {
@@ -91,7 +91,7 @@
         }
 
         .quote-btn {
-            background: #E67E22;
+            background: #D35400;
             color: white;
             padding: 12px 24px;
             border: none;
@@ -103,12 +103,12 @@
         }
 
         .quote-btn:hover {
-            background: #D35400;
+            background: #E67E22;
             transform: translateY(-1px);
         }
 
         .quote-btn:disabled {
-            background: #BDC3C7;
+            background: #B8C5D1;
             cursor: not-allowed;
             transform: none;
         }
@@ -159,11 +159,11 @@
         }
 
         tr:hover {
-            background-color: #f8f9fa;
+            background-color: #F1F4F7;
         }
 
         tr.selected {
-            background-color: #e8f5e8;
+            background-color: #E8EDF2;
         }
 
         .checkbox-cell {
@@ -188,13 +188,13 @@
 
         .price-cell {
             font-weight: bold;
-            color: #E67E22;
+            color: #D35400;
             text-align: right;
         }
 
         .dimension-cell {
             font-size: 0.9em;
-            color: #666;
+            color: #6B7685;
         }
 
         .image-cell {
@@ -215,14 +215,14 @@
         .no-image-small {
             width: 140px;
             height: 140px;
-            background: #f5f5f5;
+            background: #F7F9FB;
             border: 1px solid #ddd;
             border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 10px;
-            color: #999;
+            color: #8A95A3;
             text-align: center;
         }
 
@@ -270,15 +270,15 @@
         }
 
         .quantity-input:disabled {
-            background: #f5f5f5;
-            color: #999;
+            background: #F7F9FB;
+            color: #8A95A3;
         }
 
         .loading {
             text-align: center;
             padding: 50px;
             font-size: 1.2em;
-            color: #666;
+            color: #6B7685;
         }
 
         .quote-modal {
@@ -309,7 +309,7 @@
         .customer-info {
             margin: 20px 0;
             padding: 15px;
-            background-color: #f8f9fa;
+            background-color: #F7F9FB;
             border-radius: 8px;
             border-left: 4px solid #2B3E50;
         }
@@ -334,7 +334,7 @@
         .field-group label {
             font-weight: bold;
             margin-bottom: 5px;
-            color: #555;
+            color: #5A6B78;
         }
 
         .field-group input {
@@ -381,7 +381,7 @@
         }
 
         .quote-total {
-            background: #f8f9fa;
+            background: #F7F9FB;
             padding: 20px;
             border-radius: 8px;
             text-align: right;
@@ -391,7 +391,7 @@
         .total-amount {
             font-size: 1.5em;
             font-weight: bold;
-            color: #E67E22;
+            color: #D35400;
         }
 
         .quote-actions {
@@ -535,12 +535,12 @@
 
         /* Custom Products Styles */
         .custom-products-box {
-            background: linear-gradient(135deg, #E67E22 0%, #D35400 100%);
+            background: linear-gradient(135deg, #5D6A75 0%, #485964 100%);
             color: white;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(211, 84, 0, 0.3);
         }
 
         .custom-box-header {
@@ -679,7 +679,7 @@
         .pdf-hotline {
             font-size: 14px;
             font-weight: bold;
-            color: #E67E22;
+            color: #D35400;
         }
 
         .pdf-date {
@@ -689,7 +689,7 @@
         }
 
         .pdf-customer-info {
-            background: #f8f9fa;
+            background: #F7F9FB;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 25px;
@@ -735,7 +735,7 @@
         }
 
         .pdf-table tr:nth-child(even) {
-            background: #f8f9fa;
+            background: #F7F9FB;
         }
 
         .pdf-total-section {
@@ -758,6 +758,43 @@
             font-style: italic;
             border-top: 1px solid #eee;
             padding-top: 15px;
+        }
+
+        /* Success and Warning States */
+        .success-message {
+            background: #27AE60;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .warning-message {
+            background: #F39C12;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .error-message {
+            background: #E74C3C;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .info-message {
+            background: #3498DB;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
         }
 
         @media (max-width: 768px) {
@@ -1657,7 +1694,7 @@
                         </div>
                     </div>
                     <div style="text-align: center;">${item.quantity}</div>
-                    <div style="text-align: right; font-weight: bold; color: #E67E22;">
+                    <div style="text-align: right; font-weight: bold; color: #95A5A6;">
                         ${formatPrice(item.subtotal || (item.price * item.quantity))} VND
                     </div>
                 </div>
@@ -1728,7 +1765,7 @@
                     <div style="flex: 1; text-align: center;">
                         <div style="font-size: 28px; font-weight: bold; color: #2B3E50; margin-bottom: 8px;">BẢNG BÁO GIÁ</div>
                         <div style="font-size: 16px; color: #666; margin-bottom: 5px;">SANKO - Tủ bếp Inox hệ Module</div>
-                        <div style="font-size: 14px; font-weight: bold; color: #E67E22;">Hotline: 0844 803 777</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #95A5A6;">Hotline: 0844 803 777</div>
                     </div>
                 </div>
                 <div style="text-align: right; font-size: 12px; margin-bottom: 20px; color: #333;">
@@ -1803,7 +1840,7 @@
                 
                 const canvas = await html2canvas(pdfTemplate, {
                     scale: 1.5,
-                    useCORS: true,
+                    useCORS: true,  
                     allowTaint: true,
                     backgroundColor: '#ffffff',
                     logging: true,
