@@ -1056,39 +1056,21 @@
 
         // Function to load products data from Google Sheets (No CORS!)
         async function loadProductsData() {
-            try {
-                document.getElementById('loadingMessage').style.display = 'block';
-                document.getElementById('loadingMessage').textContent = 'Đang tải dữ liệu từ Google Sheets...';
-                
-                // Gọi trực tiếp Google Sheets API - không có CORS!
-                const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEETS_CONFIG.SHEET_ID}/values/${GOOGLE_SHEETS_CONFIG.RANGE}?key=${GOOGLE_SHEETS_CONFIG.API_KEY}`;
-                const response = await fetch(sheetsUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`Không thể tải dữ liệu từ Google Sheets: ${response.status}`);
-                }
-                
-                const sheetsData = await response.json();
-                
-                // Convert sheets data to products array
-                const productsData = convertSheetsToProducts(sheetsData);
-                
-                if (!Array.isArray(productsData) || productsData.length === 0) {
-                    throw new Error('Không có dữ liệu sản phẩm trong Google Sheets');
-                }
-                
-                allProductsData = productsData;
-                filteredProductsData = [...allProductsData];
-                populateFilters();
-                displayProducts(filteredProductsData);
-                updateUI();
-                renderCustomProducts();
-                document.getElementById('loadingMessage').style.display = 'none';
-                
-            } catch (error) {
-                document.getElementById('loadingMessage').textContent = 
-                    `Lỗi: ${error.message}. Vui lòng thử lại.`;
-            }
+            document.getElementById('loadingMessage').style.display = 'block';
+            document.getElementById('loadingMessage').textContent = 'Đang tải dữ liệu từ Google Sheets...';
+            
+            const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEETS_CONFIG.SHEET_ID}/values/${GOOGLE_SHEETS_CONFIG.RANGE}?key=${GOOGLE_SHEETS_CONFIG.API_KEY}`;
+            const response = await fetch(sheetsUrl);
+            const sheetsData = await response.json();
+            const productsData = convertSheetsToProducts(sheetsData);
+            
+            allProductsData = productsData;
+            filteredProductsData = [...allProductsData];
+            populateFilters();
+            displayProducts(filteredProductsData);
+            updateUI();
+            renderCustomProducts();
+            document.getElementById('loadingMessage').style.display = 'none';
         }
 
         // Function to load image IDs from Google Drive API (giữ nguyên cho images)
@@ -1105,30 +1087,24 @@
                 }
             }
             
-            try {
-                // Vẫn dùng Drive API cho images (vì Sheets không chứa images)
-                const apiUrl = `https://www.googleapis.com/drive/v3/files?q='${GOOGLE_SHEETS_CONFIG.IMAGES_FOLDER_ID}'+in+parents&key=${GOOGLE_SHEETS_CONFIG.API_KEY}&fields=files(id,name)`;
-                const response = await fetch(apiUrl);
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.files) {
-                        result.files.forEach(file => {
-                            const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
-                            GOOGLE_SHEETS_CONFIG.IMAGE_IDS_CACHE[nameWithoutExt] = file.id;
-                        });
-                        
-                        // Cache results
-                        if (useCache) {
-                            localStorage.setItem('sanko_image_cache', JSON.stringify({
-                                imageIds: GOOGLE_SHEETS_CONFIG.IMAGE_IDS_CACHE,
-                                timestamp: Date.now()
-                            }));
-                        }
+            const apiUrl = `https://www.googleapis.com/drive/v3/files?q='${GOOGLE_SHEETS_CONFIG.IMAGES_FOLDER_ID}'+in+parents&key=${GOOGLE_SHEETS_CONFIG.API_KEY}&fields=files(id,name)`;
+            const response = await fetch(apiUrl);
+            
+            if (response.ok) {
+                const result = await response.json();
+                if (result.files) {
+                    result.files.forEach(file => {
+                        const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
+                        GOOGLE_SHEETS_CONFIG.IMAGE_IDS_CACHE[nameWithoutExt] = file.id;
+                    });
+                    
+                    if (useCache) {
+                        localStorage.setItem('sanko_image_cache', JSON.stringify({
+                            imageIds: GOOGLE_SHEETS_CONFIG.IMAGE_IDS_CACHE,
+                            timestamp: Date.now()
+                        }));
                     }
                 }
-            } catch (error) {
-                console.error('Error loading image IDs:', error);
             }
         }
 
@@ -1193,15 +1169,11 @@
             refreshBtn.disabled = true;
             refreshBtn.textContent = '🔄 Đang tải...';
             
-            try {
-                localStorage.removeItem('sanko_image_cache');
-                GOOGLE_SHEETS_CONFIG.IMAGE_IDS_CACHE = {};
-                await loadImageIdsWithAPI(false);
-                await loadProductsData();
-                refreshBtn.textContent = '✅ Đã cập nhật';
-            } catch (error) {
-                refreshBtn.textContent = '❌ Lỗi';
-            }
+            localStorage.removeItem('sanko_image_cache');
+            GOOGLE_SHEETS_CONFIG.IMAGE_IDS_CACHE = {};
+            await loadImageIdsWithAPI(false);
+            await loadProductsData();
+            refreshBtn.textContent = '✅ Đã cập nhật';
             
             setTimeout(() => {
                 refreshBtn.textContent = '🔄 Refresh';
@@ -1650,11 +1622,7 @@
         // Unified export preparation function
         function prepareExportData() {
             const allSelectedItems = getAllSelectedItems();
-            
-            if (allSelectedItems.length === 0) {
-                alert('Vui lòng chọn ít nhất một sản phẩm để tạo báo giá.');
-                return null;
-            }
+            if (allSelectedItems.length === 0) return null;
             
             return {
                 items: allSelectedItems,
@@ -1708,42 +1676,39 @@
         async function exportToPDF() {
             const exportData = prepareExportData();
             if (!exportData) return;
-
-            try {
-                if (typeof html2canvas === 'undefined') {
-                    alert('Thư viện HTML2Canvas chưa được tải. Vui lòng thử lại sau.');
-                    return;
-                }
-
-                await generateCanvasPDF(exportData);
-            } catch (error) {
-                alert('Có lỗi xảy ra khi tạo file PDF. Vui lòng kiểm tra kết nối mạng và thử lại.');
-            }
+            await generateCanvasPDF(exportData);
         }
 
         async function exportToExcel() {
             const exportData = prepareExportData();
             if (!exportData) return;
-
-            try {
-                if (typeof XLSX === 'undefined') {
-                    alert('Thư viện Excel chưa được tải. Vui lòng thử lại sau.');
-                    return;
-                }
-
-                await generateExcelFile(exportData);
-            } catch (error) {
-                alert('Có lỗi xảy ra khi tạo file Excel. Vui lòng thử lại.');
-            }
+            await generateExcelFile(exportData);
         }        // PDF generation using HTML2Canvas for high visual quality
         // =============== PDF EXPORT FUNCTIONS ===============
-        // Generate PDF template HTML
-        function generatePDFTemplateHTML(items, total, customerName, customerPhone) {
+        // Calculate items per page based on content
+        function calculateItemsPerPage() {
+            // Based on A4 page height and typical item height
+            // Header: ~120px, Customer info: ~80px, Total section: ~60px, Footer: ~40px
+            // Available space for items: ~600px
+            // Each item row: ~25px 
+            return 20; // Conservative estimate to ensure no overflow
+        }
+
+        // Generate PDF template HTML with pagination support
+        function generatePDFTemplateHTML(items, total, customerName, customerPhone, pageNumber = 1, totalPages = 1, isFirstPage = true, isLastPage = true) {
+            const customerInfoHTML = (customerName || customerPhone) && isFirstPage ? `
+                <div style="background: #F7F9FB; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #2B3E50;">
+                    <div style="font-size: 16px; font-weight: bold; color: #2B3E50; margin-bottom: 10px;">THÔNG TIN KHÁCH HÀNG</div>
+                    ${customerName ? `<div style="margin-bottom: 5px; color: #333;"><strong>Tên khách hàng:</strong> ${customerName}</div>` : ''}
+                    ${customerPhone ? `<div style="margin-bottom: 5px; color: #333;"><strong>Số điện thoại:</strong> ${customerPhone}</div>` : ''}
+                </div>` : '';
+
             const itemsHTML = items.map((item, index) => {
                 const itemSubtotal = item.subtotal || (item.price * item.quantity);
+                const globalIndex = item.globalIndex || index; // Use global index if available
                 return `
-                    <tr style="${index % 2 === 0 ? 'background: #f8f9fa;' : 'background: white;'}">
-                        <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 11px; text-align: center; color: #333;">${index + 1}</td>
+                    <tr style="${index % 2 === 0 ? 'background: #F7F9FB;' : 'background: white;'}">
+                        <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 11px; text-align: center; color: #333;">${globalIndex + 1}</td>
                         <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 11px; color: #333;"><strong>${item.name}</strong></td>
                         <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 11px; color: #333; text-align: center;">${!item.isCustom ? `${item.length || 'N/A'}×${item.width || 'N/A'}×${item.height || 'N/A'}mm` : 'Tùy chỉnh'}</td>
                         <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 11px; text-align: right; color: #333;">${formatPrice(item.price)}</td>
@@ -1752,25 +1717,35 @@
                     </tr>`;
             }).join('');
 
-            const customerInfoHTML = (customerName || customerPhone) ? `
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #2B3E50;">
-                    <div style="font-size: 16px; font-weight: bold; color: #2B3E50; margin-bottom: 10px;">THÔNG TIN KHÁCH HÀNG</div>
-                    ${customerName ? `<div style="margin-bottom: 5px; color: #333;"><strong>Tên khách hàng:</strong> ${customerName}</div>` : ''}
-                    ${customerPhone ? `<div style="margin-bottom: 5px; color: #333;"><strong>Số điện thoại:</strong> ${customerPhone}</div>` : ''}
+            const totalSectionHTML = isLastPage ? `
+                <div style="background: #2B3E50; color: white; padding: 15px; border-radius: 8px; text-align: right; margin-bottom: 20px;">
+                    <div style="font-size: 18px; font-weight: bold;">TỔNG TIỀN: ${formatPrice(total)} VND</div>
+                </div>` : '';
+
+            const footerHTML = isLastPage ? `
+                <div style="text-align: center; color: #2B3E50; font-style: italic; border-top: 1px solid #eee; padding-top: 15px;">
+                    <div>Cảm ơn quý khách đã tin tưởng sản phẩm SANKO!</div>
+                    <div>Mọi thắc mắc xin liên hệ: 0844 803 777</div>
+                </div>` : '';
+
+            const pageInfoHTML = totalPages > 1 ? `
+                <div style="text-align: center; font-size: 10px; color: #666; margin-bottom: 10px;">
+                    Trang ${pageNumber} / ${totalPages}
                 </div>` : '';
 
             return `
                 <div style="display: flex; align-items: center; margin-bottom: 30px; border-bottom: 3px solid #2B3E50; padding-bottom: 20px;">
-                    <img src="Logo.png" alt="SANKO Logo" style="width: 200px; height: auto; margin-right: 30px;" onerror="this.style.display='none'" />
+                    <img src="Logo.png" alt="SANKO Logo" style="width: 200px; height: auto; margin-right: 30px;" />
                     <div style="flex: 1; text-align: center;">
                         <div style="font-size: 28px; font-weight: bold; color: #2B3E50; margin-bottom: 8px;">BẢNG BÁO GIÁ</div>
                         <div style="font-size: 16px; color: #666; margin-bottom: 5px;">SANKO - Tủ bếp Inox hệ Module</div>
-                        <div style="font-size: 14px; font-weight: bold; color: #95A5A6;">Hotline: 0844 803 777</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #D35400;">Hotline: 0844 803 777</div>
                     </div>
                 </div>
                 <div style="text-align: right; font-size: 12px; margin-bottom: 20px; color: #333;">
                     Ngày lập: ${new Date().toLocaleDateString('vi-VN')}
                 </div>
+                ${pageInfoHTML}
                 ${customerInfoHTML}
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #ddd;">
                     <thead>
@@ -1785,13 +1760,8 @@
                     </thead>
                     <tbody>${itemsHTML}</tbody>
                 </table>
-                <div style="background: #2B3E50; color: white; padding: 15px; border-radius: 8px; text-align: right; margin-bottom: 20px;">
-                    <div style="font-size: 18px; font-weight: bold;">TỔNG TIỀN: ${formatPrice(total)} VND</div>
-                </div>
-                <div style="text-align: center; color: #2B3E50; font-style: italic; border-top: 1px solid #eee; padding-top: 15px;">
-                    <div>Cảm ơn quý khách đã tin tưởng sản phẩm SANKO!</div>
-                    <div>Mọi thắc mắc xin liên hệ: 0844 803 777</div>
-                </div>`;
+                ${totalSectionHTML}
+                ${footerHTML}`;
         }
 
         // Helper to create PDF template element
@@ -1817,18 +1787,45 @@
             return element;
         }
 
-        // Unified PDF rendering logic
-        async function renderPDFFromTemplate(pdfTemplate, customerName) {
-            document.body.appendChild(pdfTemplate);
-
-            try {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                if (typeof html2canvas === 'undefined') {
-                    throw new Error('html2canvas library not loaded');
-                }
+        async function generateCanvasPDF(exportData) {
+            const { items, total, customerName, customerPhone } = exportData;
+            
+            const itemsPerPage = calculateItemsPerPage();
+            const totalPages = Math.ceil(items.length / itemsPerPage);
+            
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            pdf.deletePage(1);
+            
+            for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+                const startIndex = pageIndex * itemsPerPage;
+                const endIndex = Math.min(startIndex + itemsPerPage, items.length);
+                const pageItems = items.slice(startIndex, endIndex);
                 
-                // Make template visible for rendering
+                const itemsWithGlobalIndex = pageItems.map((item, localIndex) => ({
+                    ...item,
+                    globalIndex: startIndex + localIndex
+                }));
+                
+                const isFirstPage = pageIndex === 0;
+                const isLastPage = pageIndex === totalPages - 1;
+                const pageNumber = pageIndex + 1;
+                
+                const pdfTemplate = createPDFElement();
+                pdfTemplate.innerHTML = generatePDFTemplateHTML(
+                    itemsWithGlobalIndex, 
+                    total, 
+                    customerName, 
+                    customerPhone, 
+                    pageNumber, 
+                    totalPages, 
+                    isFirstPage, 
+                    isLastPage
+                );
+
+                document.body.appendChild(pdfTemplate);
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
                 Object.assign(pdfTemplate.style, {
                     left: '0',
                     top: '0',
@@ -1836,19 +1833,18 @@
                     opacity: '1'
                 });
                 
-                await new Promise(resolve => setTimeout(resolve, 50));
+                await new Promise(resolve => setTimeout(resolve, 100));
                 
                 const canvas = await html2canvas(pdfTemplate, {
                     scale: 1.5,
                     useCORS: true,  
                     allowTaint: true,
                     backgroundColor: '#ffffff',
-                    logging: true,
+                    logging: false,
                     width: pdfTemplate.offsetWidth,
                     height: pdfTemplate.offsetHeight
                 });
 
-                // Hide template immediately
                 Object.assign(pdfTemplate.style, {
                     left: '-9999px',
                     top: '-9999px',
@@ -1856,39 +1852,23 @@
                     opacity: '0'
                 });
 
-                const { jsPDF } = window.jspdf;
-                if (typeof jsPDF === 'undefined') {
-                    throw new Error('jsPDF library not loaded');
-                }
-
-                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
                 const imgData = canvas.toDataURL('image/png');
                 const imgWidth = 210;
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
+                pdf.addPage();
                 pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-
-                const fileName = customerName ? 
-                    `bao-gia-sanko-${customerName.replace(/\s+/g, '-').toLowerCase()}.pdf` : 
-                    'bao-gia-sanko.pdf';
                 
-                pdf.save(fileName);
-
-            } finally {
                 if (pdfTemplate && document.body.contains(pdfTemplate)) {
                     document.body.removeChild(pdfTemplate);
                 }
             }
-        }
 
-        async function generateCanvasPDF(exportData) {
-            const { items, total, customerName, customerPhone } = exportData;
+            const fileName = customerName ? 
+                `bao-gia-sanko-${customerName.replace(/\s+/g, '-').toLowerCase()}.pdf` : 
+                'bao-gia-sanko.pdf';
             
-            // Create PDF template
-            const pdfTemplate = createPDFElement();
-            pdfTemplate.innerHTML = generatePDFTemplateHTML(items, total, customerName, customerPhone);
-
-            return await renderPDFFromTemplate(pdfTemplate, customerName);
+            pdf.save(fileName);
         }
 
         // =============== UTILITY FUNCTIONS ===============
