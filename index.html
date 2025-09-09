@@ -15,8 +15,8 @@
 
         body {
             font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #F7F9FB;
-            color: #2C3E47;
+            background-color: #FFFFFF;
+            color: #1E2F3F;
         }
 
         .container {
@@ -26,12 +26,12 @@
         }
 
         header {
-            background: linear-gradient(135deg, #2B3E50 0%, #34495E 100%);
+            background: linear-gradient(135deg, #1E3A5F 0%, #2A4B6D 100%);
             color: white;
             padding: 30px;
             margin-bottom: 30px;
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(43,62,80,0.2);
+            box-shadow: 0 4px 15px rgba(30,58,95,0.25);
         }
 
         .header-content {
@@ -66,32 +66,36 @@
         }
 
         .controls {
-            background: white;
+            background: #F0F9FF;
             padding: 25px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(59,130,246,0.1);
             margin-bottom: 30px;
             display: grid;
             grid-template-columns: 1fr 1fr auto;
             gap: 20px;
             align-items: center;
+            border: 1px solid #E0F2FE;
         }
 
         .search-box, .filter-select {
             padding: 12px 16px;
-            border: 2px solid #ddd;
+            border: 2px solid #E0F2FE;
             border-radius: 6px;
             font-size: 16px;
             transition: border-color 0.3s ease;
+            background: #FDFEFF;
+            color: #1E2F3F;
         }
 
         .search-box:focus, .filter-select:focus {
             outline: none;
-            border-color: #2B3E50;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .quote-btn {
-            background: #D35400;
+            background: linear-gradient(135deg, #FB923C 0%, #F59E0B 100%);
             color: white;
             padding: 12px 24px;
             border: none;
@@ -100,11 +104,13 @@
             font-size: 16px;
             font-weight: bold;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(251, 146, 60, 0.3);
         }
 
         .quote-btn:hover {
-            background: #E67E22;
-            transform: translateY(-1px);
+            background: linear-gradient(135deg, #F59E0B 0%, #FB923C 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(251, 146, 60, 0.4);
         }
 
         .quote-btn:disabled {
@@ -114,11 +120,12 @@
         }
 
         .products-table {
-            background: white;
+            background: #FDFEFF;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(30, 47, 63, 0.08);
             overflow: hidden;
             margin-bottom: 30px;
+            border: 1px solid #E0F2FE;
         }
 
         .table-container {
@@ -132,7 +139,7 @@
         }
 
         th {
-            background: linear-gradient(135deg, #2B3E50 0%, #34495E 100%);
+            background: #5B7FA8;
             color: white;
             padding: 15px 10px;
             text-align: left;
@@ -140,6 +147,7 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            border-bottom: 2px solid #7DA3CA;
         }
 
         th:first-child {
@@ -159,11 +167,11 @@
         }
 
         tr:hover {
-            background-color: #F1F4F7;
+            background-color: #F0F9FF;
         }
 
         tr.selected {
-            background-color: #E8EDF2;
+            background-color: #E0F2FE;
         }
 
         .checkbox-cell {
@@ -177,7 +185,7 @@
         }
 
         .type-badge {
-            background: #2B3E50;
+            background: #5B7FA8;
             color: white;
             padding: 4px 8px;
             border-radius: 12px;
@@ -188,7 +196,7 @@
 
         .price-cell {
             font-weight: bold;
-            color: #D35400;
+            color: #F59E0B;
             text-align: right;
         }
 
@@ -208,21 +216,21 @@
             height: 140px;
             object-fit: contain;
             border-radius: 4px;
-            border: 1px solid #ddd;
-            background: #f9f9f9;
+            border: 1px solid #E0F2FE;
+            background: #FDFEFF;
         }
 
         .no-image-small {
             width: 140px;
             height: 140px;
-            background: #F7F9FB;
-            border: 1px solid #ddd;
+            background: #F0F9FF;
+            border: 1px solid #E0F2FE;
             border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 10px;
-            color: #8A95A3;
+            color: #1E2F3F;
             text-align: center;
         }
 
@@ -263,15 +271,17 @@
         .quantity-input {
             width: 60px;
             padding: 4px;
-            border: 1px solid #ddd;
+            border: 1px solid #E0F2FE;
             border-radius: 3px;
             text-align: center;
             font-size: 0.9em;
+            background: #FDFEFF;
+            color: #1E2F3F;
         }
 
         .quantity-input:disabled {
-            background: #F7F9FB;
-            color: #8A95A3;
+            background: #F0F9FF;
+            color: #6B7685;
         }
 
         .loading {
@@ -309,9 +319,9 @@
         .customer-info {
             margin: 20px 0;
             padding: 15px;
-            background-color: #F7F9FB;
+            background-color: #F0F9FF;
             border-radius: 8px;
-            border-left: 4px solid #2B3E50;
+            border-left: 4px solid #3B82F6;
         }
 
         .customer-info h3 {
@@ -346,19 +356,19 @@
 
         .field-group input:focus {
             outline: none;
-            border-color: #2B3E50;
-            box-shadow: 0 0 0 2px rgba(43,62,80,0.25);
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.25);
         }
 
         .quote-header {
             text-align: center;
             margin-bottom: 30px;
-            border-bottom: 2px solid #2B3E50;
+            border-bottom: 2px solid #1E2F3F;
             padding-bottom: 20px;
         }
 
         .quote-header h2 {
-            color: #2B3E50;
+            color: #1E2F3F;
             font-size: 2em;
             margin-bottom: 10px;
         }
@@ -381,17 +391,18 @@
         }
 
         .quote-total {
-            background: #F7F9FB;
+            background: #F0F9FF;
             padding: 20px;
             border-radius: 8px;
             text-align: right;
             margin-bottom: 20px;
+            border: 1px solid #E0F2FE;
         }
 
         .total-amount {
             font-size: 1.5em;
             font-weight: bold;
-            color: #D35400;
+            color: #F59E0B;
         }
 
         .quote-actions {
@@ -411,21 +422,27 @@
         }
 
         .btn-primary {
-            background: #2B3E50;
+            background: linear-gradient(135deg, #FB923C 0%, #F59E0B 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(251, 146, 60, 0.3);
         }
 
         .btn-primary:hover {
-            background: #1A252F;
+            background: linear-gradient(135deg, #F59E0B 0%, #FB923C 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(251, 146, 60, 0.4);
         }
 
         .btn-secondary {
-            background: #34495E;
+            background: #3B82F6;
             color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
         }
 
         .btn-secondary:hover {
-            background: #2B3E50;
+            background: #2563EB;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
 
         .close-modal {
@@ -444,12 +461,12 @@
         }
 
         .selected-products-box {
-            background: linear-gradient(135deg, #2B3E50 0%, #34495E 100%);
+            background: linear-gradient(135deg, #4F7396 0%, #6B91B8 100%);
             color: white;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            box-shadow: 0 4px 15px rgba(79, 115, 150, 0.2);
             display: block;
         }
 
@@ -487,17 +504,24 @@
         .selected-items-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 10px;
+            gap: 15px;
+            background: #FFFFFF;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #3B82F6;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
+            margin-bottom: 20px;
         }
 
         .selected-item {
-            background: rgba(255,255,255,0.1);
-            padding: 12px;
-            border-radius: 6px;
+            background: #E0F2FE;
+            padding: 15px;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 2px solid #3B82F6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
         }
 
         .selected-item-info {
@@ -507,40 +531,47 @@
         .selected-item-name {
             font-weight: bold;
             margin-bottom: 4px;
+            color: #1E2F3F;
         }
 
         .selected-item-details {
             font-size: 0.85em;
-            opacity: 0.9;
+            color: #3B82F6;
+            font-weight: 500;
         }
 
         .remove-item-btn {
-            background: rgba(255,255,255,0.2);
+            background: #FB923C;
             color: white;
             border: none;
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: bold;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(251, 146, 60, 0.3);
         }
 
         .remove-item-btn:hover {
-            background: rgba(255,255,255,0.4);
+            background: #F59E0B;
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(251, 146, 60, 0.4);
         }
 
         /* Custom Products Styles */
         .custom-products-box {
-            background: linear-gradient(135deg, #5D6A75 0%, #485964 100%);
+            background: #4F7396;
             color: white;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(211, 84, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(79, 115, 150, 0.2);
+            border: 1px solid #6B91B8;
         }
 
         .custom-box-header {
@@ -1242,7 +1273,7 @@
             const selectedItems = allProductsData.filter(p => selectedProducts.has(p.id));
             
             if (selectedItems.length === 0) {
-                selectedItemsGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; opacity: 0.7; font-style: italic;">Chưa có sản phẩm nào được chọn</div>';
+                selectedItemsGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: #6B7685; font-style: italic; background: #F0F9FF; border: 2px dashed #E0F2FE; border-radius: 8px;">Chưa có sản phẩm nào được chọn</div>';
             } else {
                 selectedItemsGrid.innerHTML = selectedItems.map(item => {
                     const quantity = selectedProducts.get(item.id) || 1;
@@ -1532,6 +1563,10 @@
                                     const hasImage = imageUrl && !imageUrl.includes('data:image/svg');
                                     const imageBase64 = format === 'pdf' && productImages ? productImages[item.name]?.base64 : null;
                                     
+                                    // Create direct viewable link instead of API URL
+                                    const fileId = getImageUrl(item.name, 'id');
+                                    const viewableImageUrl = fileId ? `https://drive.google.com/file/d/${fileId}/view?usp=sharing` : imageUrl;
+                                    
                                     return [
                                         { text: (index + 1).toString(), style: 'tableCell', alignment: 'center' },
                                         { 
@@ -1553,7 +1588,7 @@
                                             format === 'pdf' ? 
                                                 {
                                                     text: 'Xem hình ảnh',
-                                                    link: imageUrl,
+                                                    link: viewableImageUrl,
                                                     style: 'tableCellLink',
                                                     alignment: 'left',
                                                     fontSize: 8,
@@ -1561,7 +1596,7 @@
                                                     decoration: 'underline'
                                                 } :
                                                 { 
-                                                    text: imageUrl,
+                                                    text: viewableImageUrl,
                                                     style: 'tableCell', 
                                                     alignment: 'left',
                                                     fontSize: 7,
