@@ -629,137 +629,6 @@
             background: rgba(255,255,255,0.4);
         }
 
-        /* PDF Template Styles */
-        .pdf-template {
-            width: 210mm;
-            min-height: 297mm;
-            background: white;
-            padding: 20mm;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
-            color: #333;
-            position: absolute;
-            left: -9999px;
-            top: 0;
-        }
-
-        .pdf-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 3px solid #2B3E50;
-            padding-bottom: 20px;
-        }
-
-        .pdf-logo {
-            width: 80px;
-            height: auto;
-            margin-right: 30px;
-        }
-
-        .pdf-company-info {
-            flex: 1;
-            text-align: center;
-        }
-
-        .pdf-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #2B3E50;
-            margin-bottom: 8px;
-        }
-
-        .pdf-subtitle {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .pdf-hotline {
-            font-size: 14px;
-            font-weight: bold;
-            color: #D35400;
-        }
-
-        .pdf-date {
-            text-align: right;
-            font-size: 12px;
-            margin-bottom: 20px;
-        }
-
-        .pdf-customer-info {
-            background: #F7F9FB;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            border-left: 4px solid #2B3E50;
-        }
-
-        .pdf-customer-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #2B3E50;
-            margin-bottom: 10px;
-        }
-
-        .pdf-customer-row {
-            display: flex;
-            margin-bottom: 5px;
-        }
-
-        .pdf-customer-label {
-            font-weight: bold;
-            width: 150px;
-        }
-
-        .pdf-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 25px;
-        }
-
-        .pdf-table th {
-            background: #2B3E50;
-            color: white;
-            padding: 12px 8px;
-            text-align: left;
-            font-weight: bold;
-            font-size: 11px;
-        }
-
-        .pdf-table td {
-            padding: 10px 8px;
-            border-bottom: 1px solid #eee;
-            font-size: 11px;
-        }
-
-        .pdf-table tr:nth-child(even) {
-            background: #F7F9FB;
-        }
-
-        .pdf-total-section {
-            background: #2B3E50;
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: right;
-            margin-bottom: 20px;
-        }
-
-        .pdf-total-text {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .pdf-footer {
-            text-align: center;
-            color: #2B3E50;
-            font-style: italic;
-            border-top: 1px solid #eee;
-            padding-top: 15px;
-        }
-
         /* Success and Warning States */
         .success-message {
             background: #27AE60;
@@ -998,10 +867,9 @@
         </div>
     </div>
 
-    <!-- Include jsPDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Include html2canvas for better font support -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Include PDFMake for better text copying -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <!-- Include SheetJS for Excel export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -1054,7 +922,6 @@
             return products;
         }
 
-        // Function to load products data from Google Sheets (No CORS!)
         async function loadProductsData() {
             document.getElementById('loadingMessage').style.display = 'block';
             document.getElementById('loadingMessage').textContent = 'Đang tải dữ liệu từ Google Sheets...';
@@ -1073,9 +940,7 @@
             document.getElementById('loadingMessage').style.display = 'none';
         }
 
-        // Function to load image IDs from Google Drive API (giữ nguyên cho images)
         async function loadImageIdsWithAPI(useCache = true) {
-            // Check cache first
             if (useCache) {
                 const cached = localStorage.getItem('sanko_image_cache');
                 if (cached) {
@@ -1112,14 +977,11 @@
 
 
 
-        // Helper function to find file ID from product name
         function findFileId(productName) {
-            // Check cache with exact product name first
             if (GOOGLE_SHEETS_CONFIG.IMAGE_IDS_CACHE[productName]) {
                 return GOOGLE_SHEETS_CONFIG.IMAGE_IDS_CACHE[productName];
             }
             
-            // Try with common file extensions
             const extensions = ['jpg', 'jpeg', 'png', 'webp'];
             for (const ext of extensions) {
                 const keyWithExt = `${productName}.${ext}`;
@@ -1131,29 +993,22 @@
             return '';
         }
 
-        // Function to get image URL or file ID from Google Drive
+        // Function to get image URL from Google Drive
         function getImageUrl(productName, returnType = 'url') {
             const fileId = findFileId(productName);
             
-            // Return file ID only if requested
             if (returnType === 'id') {
                 return fileId;
             }
             
-            // Return full URL if file ID found
             if (fileId) {
-                const url = `${GOOGLE_SHEETS_CONFIG.IMAGES_BASE_URL}${fileId}`;
-                return url;
+                // Use Google Drive API v3 with API key for direct access
+                return `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${GOOGLE_SHEETS_CONFIG.API_KEY}`;
             }
             
-            // Return placeholder when image not found on Google Drive
-            return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+            return '';
         }
-        
-        // Helper function to get file ID only (for backward compatibility)
-        function getFileId(productName) {
-            return getImageUrl(productName, 'id');
-        }
+
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', async function() {
@@ -1181,232 +1036,95 @@
             }, 2000);
         }
 
+        // Advanced image loading with blob URL creation
+        async function loadImageWithBlob(fileId, imgElement) {
+            try {
+                const urls = [
+                    `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${GOOGLE_SHEETS_CONFIG.API_KEY}`,
+                    `https://drive.google.com/uc?export=view&id=${fileId}`,
+                    `https://lh3.googleusercontent.com/d/${fileId}`
+                ];
+                
+                for (const url of urls) {
+                    try {
+                        const response = await fetch(url, {
+                            method: 'GET',
+                            mode: 'cors',
+                            cache: 'force-cache'
+                        });
+                        
+                        if (response.ok) {
+                            const blob = await response.blob();
+                            const objectURL = URL.createObjectURL(blob);
+                            imgElement.src = objectURL;
+                            
+                            // Clean up object URL after image loads
+                            imgElement.onload = () => {
+                                URL.revokeObjectURL(objectURL);
+                            };
+                            
+                            return true;
+                        }
+                    } catch (fetchError) {
+                        continue;
+                    }
+                }
+                return false;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        // Handle image loading errors with multiple fallback URLs
+        function handleImageError(img) {
+            const productName = img.getAttribute('data-product-name');
+            const fileId = getImageUrl(productName, 'id');
+            
+            if (!fileId) {
+                img.onerror = null;
+                img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkzhu5Fi dOG6o2k8L3RleHQ+PC9zdmc+';
+                return;
+            }
+            
+            if (!img.retryCount) img.retryCount = 0;
+            img.retryCount++;
+            
+            // Try blob loading first (most reliable)
+            if (img.retryCount === 1) {
+                loadImageWithBlob(fileId, img).then(success => {
+                    if (!success) {
+                        handleImageError(img); // Try next fallback
+                    }
+                });
+                return;
+            }
+            
+            const fallbackUrls = [
+                `https://drive.google.com/uc?export=view&id=${fileId}`,
+                `https://lh3.googleusercontent.com/d/${fileId}`,
+                `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`,
+                `https://docs.google.com/uc?export=download&id=${fileId}`
+            ];
+            
+            const fallbackIndex = img.retryCount - 2; // -2 because first retry is blob
+            if (fallbackIndex < fallbackUrls.length) {
+                img.src = fallbackUrls[fallbackIndex];
+                return;
+            }
+            
+            // All fallbacks failed
+            img.onerror = null;
+            img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkzhu5Fi dOG6o2k8L3RleHQ+PC9zdmc+';
+        }
+
 
 
         // Extract Excel generation logic
-        async function generateExcelFile(exportData) {
-            const { items, total, customerName, customerPhone } = exportData;
-            
-            // Create workbook
-            const wb = XLSX.utils.book_new();
-            
-            // Create worksheet data
-            const wsData = createExcelWorksheetData(items, total, customerName, customerPhone);
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-            
-            // Apply formatting and colors
-            applyExcelFormatting(ws, items.length, customerName || customerPhone);
-            
-            // Add worksheet to workbook
-            XLSX.utils.book_append_sheet(wb, ws, 'Báo giá SANKO');
-            
-            // Generate filename and export
-            const fileName = customerName ? 
-                `bao-gia-sanko-${customerName.replace(/\s+/g, '-').toLowerCase()}.xlsx` : 
-                'bao-gia-sanko.xlsx';
-            
-            XLSX.writeFile(wb, fileName);
-        }
 
-        // Extract Excel worksheet data creation
-        function createExcelWorksheetData(items, total, customerName, customerPhone) {
-            const wsData = [];
-            
-            // Header section
-            wsData.push(['BẢNG BÁO GIÁ SANKO']);
-            wsData.push(['Tủ bếp Inox hệ Module']);
-            wsData.push(['Hotline: 0844 803 777']);
-            wsData.push(['']);
-            wsData.push([`Ngày lập: ${new Date().toLocaleDateString('vi-VN')}`]);
-            wsData.push(['']);
-            
-            // Customer info
-            if (customerName || customerPhone) {
-                wsData.push(['THÔNG TIN KHÁCH HÀNG']);
-                if (customerName) wsData.push([`Tên khách hàng: ${customerName}`]);
-                if (customerPhone) wsData.push([`Số điện thoại: ${customerPhone}`]);
-                wsData.push(['']);
-            }
-            
-            // Table headers
-            const headerRow = ['STT', 'TÊN MODULE', 'LOẠI', 'KÍCH THƯỚC', 'CẤU TẠO', 'CÔNG NĂNG', 'GIÁ ĐƠNVỊ', 'SỐ LƯỢNG', 'THÀNH TIỀN'];
-            wsData.push(headerRow);
-            
-            // Add products
-            items.forEach((item, index) => {
-                const itemSubtotal = item.subtotal || (item.price * item.quantity);
-                const dimensions = !item.isCustom ? 
-                    `${item.length || 'N/A'}×${item.width || 'N/A'}×${item.height || 'N/A'}mm` : 
-                    'Tùy chỉnh';
-                
-                wsData.push([
-                    index + 1,
-                    item.name,
-                    item.type || 'Tùy chỉnh',
-                    dimensions,
-                    item.structure || 'N/A',
-                    item.function || 'N/A',
-                    item.price,
-                    item.quantity,
-                    itemSubtotal
-                ]);
-            });
-            
-            // Add total row
-            wsData.push(['']);
-            wsData.push(['', '', '', '', '', '', '', 'TỔNG TIỀN:', total]);
-            
-            return wsData;
-        }
-
-        // Function to apply Excel formatting and colors
-        function applyExcelFormatting(ws, itemCount, hasCustomerInfo) {
-            // Set column widths
-            const colWidths = [
-                { wch: 5 },  // STT
-                { wch: 25 }, // TÊN MODULE
-                { wch: 12 }, // LOẠI
-                { wch: 18 }, // KÍCH THƯỚC
-                { wch: 30 }, // CẤU TẠO
-                { wch: 35 }, // CÔNG NĂNG
-                { wch: 15 }, // GIÁ ĐƠN VỊ
-                { wch: 10 }, // SỐ LƯỢNG
-                { wch: 18 }  // THÀNH TIỀN
-            ];
-            ws['!cols'] = colWidths;
-            
-            // Calculate row positions
-            let headerRowIndex = hasCustomerInfo ? 9 : 6; // Row index where table headers start
-            let dataStartRow = headerRowIndex + 1;
-            let totalRowIndex = dataStartRow + itemCount + 1;
-            
-            // Helper function to get cell address
-            const getCellAddr = (row, col) => XLSX.utils.encode_cell({ r: row, c: col });
-            
-            // Format title (row 1)
-            const titleCell = getCellAddr(0, 0);
-            if (!ws[titleCell]) ws[titleCell] = { v: '' };
-            ws[titleCell].s = {
-                font: { bold: true, sz: 16, color: { rgb: "FFFFFF" } },
-                fill: { fgColor: { rgb: "667EEA" } },
-                alignment: { horizontal: "center", vertical: "center" }
-            };
-            
-            // Merge title across columns
-            if (!ws['!merges']) ws['!merges'] = [];
-            ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 8 } });
-            
-            // Format subtitle (row 2)
-            const subtitleCell = getCellAddr(1, 0);
-            if (!ws[subtitleCell]) ws[subtitleCell] = { v: '' };
-            ws[subtitleCell].s = {
-                font: { sz: 12, color: { rgb: "666666" } },
-                alignment: { horizontal: "center" }
-            };
-            ws['!merges'].push({ s: { r: 1, c: 0 }, e: { r: 1, c: 8 } });
-            
-            // Format hotline (row 3)
-            const hotlineCell = getCellAddr(2, 0);
-            if (!ws[hotlineCell]) ws[hotlineCell] = { v: '' };
-            ws[hotlineCell].s = {
-                font: { bold: true, color: { rgb: "FF6B6B" } },
-                alignment: { horizontal: "center" }
-            };
-            ws['!merges'].push({ s: { r: 2, c: 0 }, e: { r: 2, c: 8 } });
-            
-            // Format customer info section
-            if (hasCustomerInfo) {
-                const customerHeaderCell = getCellAddr(6, 0);
-                if (!ws[customerHeaderCell]) ws[customerHeaderCell] = { v: '' };
-                ws[customerHeaderCell].s = {
-                    font: { bold: true, sz: 12, color: { rgb: "667EEA" } },
-                    fill: { fgColor: { rgb: "F8F9FA" } },
-                    border: {
-                        left: { style: "thick", color: { rgb: "667EEA" } }
-                    }
-                };
-            }
-            
-            // Format table headers
-            for (let col = 0; col < 9; col++) {
-                const headerCell = getCellAddr(headerRowIndex, col);
-                if (!ws[headerCell]) ws[headerCell] = { v: '' };
-                ws[headerCell].s = {
-                    font: { bold: true, color: { rgb: "FFFFFF" } },
-                    fill: { fgColor: { rgb: "667EEA" } },
-                    alignment: { horizontal: "center", vertical: "center" },
-                    border: {
-                        top: { style: "thin", color: { rgb: "FFFFFF" } },
-                        bottom: { style: "thin", color: { rgb: "FFFFFF" } },
-                        left: { style: "thin", color: { rgb: "FFFFFF" } },
-                        right: { style: "thin", color: { rgb: "FFFFFF" } }
-                    }
-                };
-            }
-            
-            // Format data rows with alternating colors
-            for (let row = dataStartRow; row < dataStartRow + itemCount; row++) {
-                const isEvenRow = (row - dataStartRow) % 2 === 0;
-                const fillColor = isEvenRow ? "F8F9FA" : "FFFFFF";
-                
-                for (let col = 0; col < 9; col++) {
-                    const cellAddr = getCellAddr(row, col);
-                    if (!ws[cellAddr]) ws[cellAddr] = { v: '' };
-                    
-                    let cellStyle = {
-                        fill: { fgColor: { rgb: fillColor } },
-                        border: {
-                            top: { style: "thin", color: { rgb: "E0E0E0" } },
-                            bottom: { style: "thin", color: { rgb: "E0E0E0" } },
-                            left: { style: "thin", color: { rgb: "E0E0E0" } },
-                            right: { style: "thin", color: { rgb: "E0E0E0" } }
-                        }
-                    };
-                    
-                    // Special formatting for specific columns
-                    if (col === 0) { // STT column
-                        cellStyle.alignment = { horizontal: "center" };
-                    } else if (col === 6 || col === 8) { // Price columns
-                        cellStyle.numFmt = '#,##0';
-                        cellStyle.alignment = { horizontal: "right" };
-                        cellStyle.font = { color: { rgb: "FF6B6B" } };
-                    } else if (col === 7) { // Quantity column
-                        cellStyle.alignment = { horizontal: "center" };
-                    }
-                    
-                    ws[cellAddr].s = cellStyle;
-                }
-            }
-            
-            // Format total row
-            const totalLabelCell = getCellAddr(totalRowIndex, 7);
-            const totalValueCell = getCellAddr(totalRowIndex, 8);
-            
-            if (!ws[totalLabelCell]) ws[totalLabelCell] = { v: '' };
-            ws[totalLabelCell].s = {
-                font: { bold: true, sz: 12, color: { rgb: "FFFFFF" } },
-                fill: { fgColor: { rgb: "667EEA" } },
-                alignment: { horizontal: "center" }
-            };
-            
-            if (!ws[totalValueCell]) ws[totalValueCell] = { v: '' };
-            ws[totalValueCell].s = {
-                font: { bold: true, sz: 12, color: { rgb: "FFFFFF" } },
-                fill: { fgColor: { rgb: "667EEA" } },
-                alignment: { horizontal: "right" },
-                numFmt: '#,##0'
-            };
-            
-            // Set row heights
-            if (!ws['!rows']) ws['!rows'] = [];
-            ws['!rows'][0] = { hpt: 25 }; // Title row height
-            ws['!rows'][headerRowIndex] = { hpt: 20 }; // Header row height
-            ws['!rows'][totalRowIndex] = { hpt: 20 }; // Total row height
-        }
 
         // Event listeners
-        document.getElementById('searchBox').addEventListener('input', filterProducts);
-        document.getElementById('filterSelect').addEventListener('change', filterProducts);
+        document.getElementById('searchBox').addEventListener('input', displayProducts);
+        document.getElementById('filterSelect').addEventListener('change', displayProducts);
         document.getElementById('createQuoteBtn').addEventListener('click', createQuote);
 
         function populateFilters() {
@@ -1427,7 +1145,6 @@
         function displayProducts(products = null) {
             const tbody = document.getElementById('productsTableBody');
             
-            // Apply filtering if no products provided
             if (!products) {
                 const searchTerm = document.getElementById('searchBox').value.toLowerCase();
                 const filterType = document.getElementById('filterSelect').value;
@@ -1470,9 +1187,11 @@
                                onchange="updateQuantity(${product.id}, this.value)" />
                     </td>
                     <td class="image-cell">
-                        <img src="${getImageUrl(product.name)}" 
+                        <img src="${getImageUrl(product.name) || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='}" 
                              alt="${product.name}"
-                             class="product-image-small" />
+                             class="product-image-small" 
+                             data-product-name="${product.name}"
+                             onerror="handleImageError(this)" />
                     </td>
                     <td><span class="type-badge">${product.type}</span></td>
                     <td class="module-name-cell">${product.name}</td>
@@ -1489,23 +1208,7 @@
             updateUI();
         }
 
-        // Helper function for common row UI updates
-        function updateRowUI(productId, isSelected, quantity = 1) {
-            const row = document.getElementById(`row-${productId}`);
-            if (!row) return;
-            
-            const checkbox = row.querySelector('input[type="checkbox"]');
-            const quantityInput = row.querySelector('.quantity-input');
-            
-            row.classList.toggle('selected', isSelected);
-            if (checkbox) checkbox.checked = isSelected;
-            if (quantityInput) {
-                quantityInput.disabled = !isSelected;
-                quantityInput.value = quantity;
-            }
-        }
-
-        // Unified UI update function
+// Unified UI update function
         function updateUI() {
             // Update counts and button state
             const count = selectedProducts.size;
@@ -1559,62 +1262,51 @@
             }
         }
 
-        // Simplified filter function - just calls displayProducts
-        function filterProducts() {
-            displayProducts();
-        }
-
-        function toggleProduct(productId) {
+        // Consolidated selection management
+        function updateSelection(productId, action, quantity = 1) {
             productId = parseInt(productId);
+            quantity = Math.max(1, Math.min(999, parseInt(quantity) || 1));
             
-            if (selectedProducts.has(productId)) {
-                selectedProducts.delete(productId);
-                updateRowUI(productId, false, 1);
-            } else {
-                selectedProducts.set(productId, 1);
-                updateRowUI(productId, true, 1);
+            switch (action) {
+                case 'toggle':
+                    if (selectedProducts.has(productId)) {
+                        selectedProducts.delete(productId);
+                    } else {
+                        selectedProducts.set(productId, quantity);
+                    }
+                    displayProducts(filteredProductsData);
+                    break;
+                case 'setQuantity':
+                    if (selectedProducts.has(productId)) {
+                        selectedProducts.set(productId, quantity);
+                    }
+                    break;
+                case 'remove':
+                    selectedProducts.delete(productId);
+                    displayProducts(filteredProductsData);
+                    break;
+                case 'clear':
+                    selectedProducts.clear();
+                    displayProducts(filteredProductsData);
+                    break;
             }
-            
             updateUI();
-        }
-
-        function updateQuantity(productId, quantity) {
-            quantity = parseInt(quantity) || 1;
-            if (quantity < 1) quantity = 1;
-            if (quantity > 999) quantity = 999;
-            
-            if (selectedProducts.has(productId)) {
-                selectedProducts.set(productId, quantity);
-                updateUI();
-            }
-        }
+        }        // Wrapper functions for compatibility
+        function toggleProduct(productId) { updateSelection(productId, 'toggle'); }
+        function updateQuantity(productId, quantity) { updateSelection(productId, 'setQuantity', quantity); }
+        function removeSelectedItem(productId) { updateSelection(productId, 'remove'); }
+        function clearAllSelected() { updateSelection(null, 'clear'); }
 
         function toggleSelectAll() {
             const selectAllCheckbox = document.getElementById('selectAll');
             const visibleProductIds = filteredProductsData.map(p => p.id);
             
             if (selectAllCheckbox.checked) {
-                // Select all visible products
                 visibleProductIds.forEach(id => selectedProducts.set(id, 1));
             } else {
-                // Deselect all visible products
                 visibleProductIds.forEach(id => selectedProducts.delete(id));
             }
             
-            // Re-render to reflect changes
-            displayProducts(filteredProductsData);
-            updateUI();
-        }
-
-        function removeSelectedItem(productId) {
-            selectedProducts.delete(productId);
-            updateRowUI(productId, false, 1);
-            updateUI();
-        }
-
-        function clearAllSelected() {
-            selectedProducts.clear();
-            // Re-render to reflect changes
             displayProducts(filteredProductsData);
             updateUI();
         }
@@ -1632,23 +1324,18 @@
             };
         }
 
-        // Simplified quote creation
         function createQuote() {
             const exportData = prepareExportData();
             if (!exportData) return;
 
-            // Set quote date
             document.getElementById('quoteDate').textContent = 
                 'Ngày: ' + new Date().toLocaleDateString('vi-VN');
 
-            // Generate quote items
-            const quoteItemsHtml = generateQuoteItemsHTML(exportData.items);
-            document.getElementById('quoteItems').innerHTML = quoteItemsHtml;
+            document.getElementById('quoteItems').innerHTML = generateQuoteItemsHTML(exportData.items);
             document.getElementById('quoteTotalAmount').textContent = formatPrice(exportData.total) + ' VND';
             document.getElementById('quoteModal').style.display = 'block';
         }
 
-        // Extract quote items HTML generation
         function generateQuoteItemsHTML(items) {
             return items.map((item, index) => `
                 <div class="quote-item">
@@ -1675,203 +1362,583 @@
 
         async function exportToPDF() {
             const exportData = prepareExportData();
-            if (!exportData) return;
-            await generateCanvasPDF(exportData);
+            if (exportData) await generateUnifiedDocument(exportData, 'pdf');
         }
 
         async function exportToExcel() {
             const exportData = prepareExportData();
-            if (!exportData) return;
-            await generateExcelFile(exportData);
-        }        // PDF generation using HTML2Canvas for high visual quality
-        // =============== PDF EXPORT FUNCTIONS ===============
-        // Calculate items per page based on content
-        function calculateItemsPerPage() {
-            // Based on A4 page height and typical item height
-            // Header: ~120px, Customer info: ~80px, Total section: ~60px, Footer: ~40px
-            // Available space for items: ~600px
-            // Each item row: ~25px 
-            return 20; // Conservative estimate to ensure no overflow
+            if (exportData) await generateUnifiedDocument(exportData, 'excel');
         }
 
-        // Generate PDF template HTML with pagination support
-        function generatePDFTemplateHTML(items, total, customerName, customerPhone, pageNumber = 1, totalPages = 1, isFirstPage = true, isLastPage = true) {
-            const customerInfoHTML = (customerName || customerPhone) && isFirstPage ? `
-                <div style="background: #F7F9FB; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #2B3E50;">
-                    <div style="font-size: 16px; font-weight: bold; color: #2B3E50; margin-bottom: 10px;">THÔNG TIN KHÁCH HÀNG</div>
-                    ${customerName ? `<div style="margin-bottom: 5px; color: #333;"><strong>Tên khách hàng:</strong> ${customerName}</div>` : ''}
-                    ${customerPhone ? `<div style="margin-bottom: 5px; color: #333;"><strong>Số điện thoại:</strong> ${customerPhone}</div>` : ''}
-                </div>` : '';
-
-            const itemsHTML = items.map((item, index) => {
-                const itemSubtotal = item.subtotal || (item.price * item.quantity);
-                const globalIndex = item.globalIndex || index; // Use global index if available
-                return `
-                    <tr style="${index % 2 === 0 ? 'background: #F7F9FB;' : 'background: white;'}">
-                        <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 11px; text-align: center; color: #333;">${globalIndex + 1}</td>
-                        <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 11px; color: #333;"><strong>${item.name}</strong></td>
-                        <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 11px; color: #333; text-align: center;">${!item.isCustom ? `${item.length || 'N/A'}×${item.width || 'N/A'}×${item.height || 'N/A'}mm` : 'Tùy chỉnh'}</td>
-                        <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 11px; text-align: right; color: #333;">${formatPrice(item.price)}</td>
-                        <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 11px; text-align: center; color: #333;">${item.quantity}</td>
-                        <td style="padding: 10px 8px; border: 1px solid #ddd; font-size: 11px; text-align: right; color: #333;"><strong>${formatPrice(itemSubtotal)}</strong></td>
-                    </tr>`;
-            }).join('');
-
-            const totalSectionHTML = isLastPage ? `
-                <div style="background: #2B3E50; color: white; padding: 15px; border-radius: 8px; text-align: right; margin-bottom: 20px;">
-                    <div style="font-size: 18px; font-weight: bold;">TỔNG TIỀN: ${formatPrice(total)} VND</div>
-                </div>` : '';
-
-            const footerHTML = isLastPage ? `
-                <div style="text-align: center; color: #2B3E50; font-style: italic; border-top: 1px solid #eee; padding-top: 15px;">
-                    <div>Cảm ơn quý khách đã tin tưởng sản phẩm SANKO!</div>
-                    <div>Mọi thắc mắc xin liên hệ: 0844 803 777</div>
-                </div>` : '';
-
-            const pageInfoHTML = totalPages > 1 ? `
-                <div style="text-align: center; font-size: 10px; color: #666; margin-bottom: 10px;">
-                    Trang ${pageNumber} / ${totalPages}
-                </div>` : '';
-
-            return `
-                <div style="display: flex; align-items: center; margin-bottom: 30px; border-bottom: 3px solid #2B3E50; padding-bottom: 20px;">
-                    <img src="Logo.png" alt="SANKO Logo" style="width: 200px; height: auto; margin-right: 30px;" />
-                    <div style="flex: 1; text-align: center;">
-                        <div style="font-size: 28px; font-weight: bold; color: #2B3E50; margin-bottom: 8px;">BẢNG BÁO GIÁ</div>
-                        <div style="font-size: 16px; color: #666; margin-bottom: 5px;">SANKO - Tủ bếp Inox hệ Module</div>
-                        <div style="font-size: 14px; font-weight: bold; color: #D35400;">Hotline: 0844 803 777</div>
-                    </div>
-                </div>
-                <div style="text-align: right; font-size: 12px; margin-bottom: 20px; color: #333;">
-                    Ngày lập: ${new Date().toLocaleDateString('vi-VN')}
-                </div>
-                ${pageInfoHTML}
-                ${customerInfoHTML}
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #ddd;">
-                    <thead>
-                        <tr style="background: #2B3E50; color: white;">
-                            <th style="padding: 12px 8px; text-align: center; font-weight: bold; font-size: 12px; border: 1px solid #ddd;">STT</th>
-                            <th style="padding: 12px 8px; text-align: left; font-weight: bold; font-size: 12px; border: 1px solid #ddd;">TÊN MODULE</th>
-                            <th style="padding: 12px 8px; text-align: center; font-weight: bold; font-size: 12px; border: 1px solid #ddd;">THÔNG SỐ</th>
-                            <th style="padding: 12px 8px; text-align: right; font-weight: bold; font-size: 12px; border: 1px solid #ddd;">GIÁ</th>
-                            <th style="padding: 12px 8px; text-align: center; font-weight: bold; font-size: 12px; border: 1px solid #ddd;">SL</th>
-                            <th style="padding: 12px 8px; text-align: right; font-weight: bold; font-size: 12px; border: 1px solid #ddd;">THÀNH TIỀN</th>
-                        </tr>
-                    </thead>
-                    <tbody>${itemsHTML}</tbody>
-                </table>
-                ${totalSectionHTML}
-                ${footerHTML}`;
-        }
-
-        // Helper to create PDF template element
-        function createPDFElement() {
-            const element = document.createElement('div');
-            Object.assign(element.style, {
-                position: 'fixed',
-                left: '-9999px',
-                top: '-9999px',
-                width: '794px',
-                minHeight: '1123px',
-                backgroundColor: '#ffffff',
-                padding: '40px',
-                fontFamily: 'Inter, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
-                fontSize: '14px',
-                lineHeight: '1.4',
-                color: '#333',
-                zIndex: '-1000',
-                visibility: 'hidden',
-                opacity: '0',
-                boxSizing: 'border-box'
+        // Helper function to convert logo to base64
+        async function getLogoBase64() {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = this.width;
+                    canvas.height = this.height;
+                    ctx.drawImage(this, 0, 0);
+                    const dataURL = canvas.toDataURL('image/png');
+                    resolve(dataURL);
+                };
+                img.onerror = () => resolve(''); // Fallback nếu không load được logo
+                img.src = 'Logo.png';
             });
-            return element;
         }
 
-        async function generateCanvasPDF(exportData) {
+        // Helper function to convert image URL to base64 for PDFMake
+        async function convertImageUrlToBase64(imageUrl) {
+            return new Promise((resolve) => {
+                if (!imageUrl || imageUrl.includes('data:image/svg')) {
+                    resolve(null);
+                    return;
+                }
+                
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = this.width;
+                    canvas.height = this.height;
+                    ctx.drawImage(this, 0, 0);
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.onerror = () => resolve(null);
+                img.src = imageUrl;
+            });
+        }
+
+        // Helper function to load all product images as base64
+        async function loadProductImages(items) {
+            const imagePromises = items.map(async (item) => {
+                const imageUrl = getImageUrl(item.name);
+                const base64 = await convertImageUrlToBase64(imageUrl);
+                return {
+                    name: item.name,
+                    url: imageUrl,
+                    base64: base64
+                };
+            });
+            
+            const results = await Promise.all(imagePromises);
+            const imageMap = {};
+            results.forEach(result => {
+                imageMap[result.name] = {
+                    url: result.url,
+                    base64: result.base64
+                };
+            });
+            return imageMap;
+        }
+
+        // Unified Document Generation - Same layout for both PDF and Excel
+        async function generateUnifiedDocument(exportData, format = 'pdf') {
             const { items, total, customerName, customerPhone } = exportData;
             
-            const itemsPerPage = calculateItemsPerPage();
-            const totalPages = Math.ceil(items.length / itemsPerPage);
+            // Convert logo to base64 (same for both formats)
+            const logoBase64 = await getLogoBase64();
             
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            pdf.deletePage(1);
+            // Load product images as base64 for PDF (Excel will use URLs)
+            const productImages = format === 'pdf' ? await loadProductImages(items) : null;
             
-            for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
-                const startIndex = pageIndex * itemsPerPage;
-                const endIndex = Math.min(startIndex + itemsPerPage, items.length);
-                const pageItems = items.slice(startIndex, endIndex);
+            // SHARED docDefinition for both PDF and Excel
+            const docDefinition = {
+                pageSize: 'A4',
+                pageMargins: [40, 120, 40, 60],
                 
-                const itemsWithGlobalIndex = pageItems.map((item, localIndex) => ({
-                    ...item,
-                    globalIndex: startIndex + localIndex
-                }));
+                // Header section (SAME for both)
+                header: {
+                    margin: [40, 15, 40, 15],
+                    table: {
+                        widths: ['auto', '*'],
+                        body: [
+                            [
+                                logoBase64 ? { image: logoBase64, width: 120, fit: [120, 80] } : { text: 'SANKO', style: 'logoText' },
+                                {
+                                    stack: [
+                                        { text: 'BẢNG BÁO GIÁ', style: 'title' },
+                                        { text: 'SANKO - Tủ bếp Inox hệ Module', style: 'subtitle' },
+                                        { text: 'Hotline: 0844 803 777', style: 'hotline' }
+                                    ],
+                                    alignment: 'center'
+                                }
+                            ]
+                        ]
+                    },
+                    layout: 'noBorders'
+                },
                 
-                const isFirstPage = pageIndex === 0;
-                const isLastPage = pageIndex === totalPages - 1;
-                const pageNumber = pageIndex + 1;
+                content: [
+                    // Date (SAME)
+                    {
+                        text: `Ngày lập: ${new Date().toLocaleDateString('vi-VN')}`,
+                        alignment: 'right',
+                        margin: [0, 0, 0, 20]
+                    },
+                    
+                    // Customer info (SAME)
+                    ...(customerName || customerPhone ? [{
+                        table: {
+                            widths: ['*'],
+                            body: [
+                                [{
+                                    stack: [
+                                        { text: 'THÔNG TIN KHÁCH HÀNG', style: 'sectionHeader' },
+                                        ...(customerName ? [{ text: `Tên khách hàng: ${customerName}`, margin: [0, 5, 0, 0] }] : []),
+                                        ...(customerPhone ? [{ text: `Số điện thoại: ${customerPhone}`, margin: [0, 5, 0, 0] }] : [])
+                                    ],
+                                    fillColor: '#F7F9FB',
+                                    margin: [10, 10, 10, 10]
+                                }]
+                            ]
+                        },
+                        layout: {
+                            defaultBorder: false,
+                            fillColor: '#F7F9FB'
+                        },
+                        margin: [0, 0, 0, 20]
+                    }] : []),
+                    
+                    // Products table (ENHANCED for Excel compatibility)
+                    {
+                        table: {
+                            headerRows: 1,
+                            widths: ['auto', '*', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'],
+                            body: [
+                                // Header (UPDATED with image link column)
+                                [
+                                    { text: 'STT', style: 'tableHeader' },
+                                    { text: 'TÊN MODULE', style: 'tableHeader' },
+                                    { text: 'THÔNG SỐ', style: 'tableHeader' },
+                                    { text: 'HÌNH ẢNH', style: 'tableHeader' },
+                                    { text: 'LINK', style: 'tableHeader' },
+                                    { text: 'GIÁ', style: 'tableHeader' },
+                                    { text: 'SL', style: 'tableHeader' },
+                                    { text: 'THÀNH TIỀN', style: 'tableHeader' }
+                                ],
+                                // Data rows (ENHANCED with images)
+                                ...items.map((item, index) => {
+                                    const itemSubtotal = item.subtotal || (item.price * item.quantity);
+                                    const dimensions = !item.isCustom ? 
+                                        `${item.length || 'N/A'}×${item.width || 'N/A'}×${item.height || 'N/A'}mm` : 
+                                        'Tùy chỉnh';
+                                    
+                                    // Get image data for this product
+                                    const imageUrl = getImageUrl(item.name);
+                                    const hasImage = imageUrl && !imageUrl.includes('data:image/svg');
+                                    const imageBase64 = format === 'pdf' && productImages ? productImages[item.name]?.base64 : null;
+                                    
+                                    return [
+                                        { text: (index + 1).toString(), style: 'tableCell', alignment: 'center' },
+                                        { 
+                                            // Reduced info for Excel due to more columns
+                                            text: format === 'excel' ? 
+                                                `${item.name}\\n${item.type || 'Tùy chỉnh'}` :
+                                                item.name,
+                                            style: 'tableCellBold' 
+                                        },
+                                        { text: dimensions, style: 'tableCell', alignment: 'center' },
+                                        // IMAGE COLUMN - Different handling for PDF vs Excel
+                                        format === 'pdf' && imageBase64 ? 
+                                            { image: imageBase64, width: 50, height: 50, alignment: 'center' } :
+                                            format === 'pdf' ? 
+                                                { text: 'Không có hình', style: 'tableCell', alignment: 'center', fontSize: 8 } :
+                                                { text: hasImage ? 'Có hình' : 'Không có', style: 'tableCell', alignment: 'center' },
+                                        // IMAGE LINK COLUMN - Show clickable URL
+                                        hasImage ? (
+                                            format === 'pdf' ? 
+                                                {
+                                                    text: 'Xem hình ảnh',
+                                                    link: imageUrl,
+                                                    style: 'tableCellLink',
+                                                    alignment: 'left',
+                                                    fontSize: 8,
+                                                    color: '#0066CC',
+                                                    decoration: 'underline'
+                                                } :
+                                                { 
+                                                    text: imageUrl,
+                                                    style: 'tableCell', 
+                                                    alignment: 'left',
+                                                    fontSize: 7,
+                                                    color: '#0066CC'
+                                                }
+                                        ) : {
+                                            text: 'Không có link',
+                                            style: 'tableCell', 
+                                            alignment: 'left',
+                                            fontSize: 7,
+                                            color: '#999999'
+                                        },
+                                        { text: formatPrice(item.price), style: 'tableCell', alignment: 'right' },
+                                        { text: item.quantity.toString(), style: 'tableCell', alignment: 'center' },
+                                        { text: formatPrice(itemSubtotal), style: 'tableCellBold', alignment: 'right' }
+                                    ];
+                                })
+                            ]
+                        },
+                        layout: {
+                            fillColor: function (rowIndex) {
+                                return (rowIndex === 0) ? '#2B3E50' : (rowIndex % 2 === 0 ? '#F7F9FB' : null);
+                            }
+                        }
+                    },
+                    
+                    // Total section (SAME)
+                    {
+                        table: {
+                            widths: ['*', 'auto'],
+                            body: [
+                                [
+                                    '',
+                                    {
+                                        text: `TỔNG TIỀN: ${formatPrice(total)} VND`,
+                                        style: 'total',
+                                        fillColor: '#2B3E50',
+                                        color: 'white',
+                                        margin: [10, 10, 10, 10]
+                                    }
+                                ]
+                            ]
+                        },
+                        layout: 'noBorders',
+                        margin: [0, 20, 0, 20]
+                    }
+                ],
                 
-                const pdfTemplate = createPDFElement();
-                pdfTemplate.innerHTML = generatePDFTemplateHTML(
-                    itemsWithGlobalIndex, 
-                    total, 
-                    customerName, 
-                    customerPhone, 
-                    pageNumber, 
-                    totalPages, 
-                    isFirstPage, 
-                    isLastPage
-                );
-
-                document.body.appendChild(pdfTemplate);
-                await new Promise(resolve => setTimeout(resolve, 300));
+                // Footer (SAME)
+                footer: {
+                    margin: [40, 20, 40, 20],
+                    stack: [
+                        { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1, lineColor: '#eee' }] },
+                        { text: 'Cảm ơn quý khách đã tin tưởng sản phẩm SANKO!', style: 'footer', margin: [0, 10, 0, 5] },
+                        { text: 'Mọi thắc mắc xin liên hệ: 0844 803 777', style: 'footer' }
+                    ]
+                },
                 
-                Object.assign(pdfTemplate.style, {
-                    left: '0',
-                    top: '0',
-                    visibility: 'visible',
-                    opacity: '1'
-                });
-                
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
-                const canvas = await html2canvas(pdfTemplate, {
-                    scale: 1.5,
-                    useCORS: true,  
-                    allowTaint: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    width: pdfTemplate.offsetWidth,
-                    height: pdfTemplate.offsetHeight
-                });
-
-                Object.assign(pdfTemplate.style, {
-                    left: '-9999px',
-                    top: '-9999px',
-                    visibility: 'hidden',
-                    opacity: '0'
-                });
-
-                const imgData = canvas.toDataURL('image/png');
-                const imgWidth = 210;
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-                
-                if (pdfTemplate && document.body.contains(pdfTemplate)) {
-                    document.body.removeChild(pdfTemplate);
+                // Styles definition (SAME)
+                styles: {
+                    logoText: {
+                        fontSize: 16,
+                        bold: true,
+                        color: '#2B3E50'
+                    },
+                    title: {
+                        fontSize: 20,
+                        bold: true,
+                        color: '#2B3E50',
+                        margin: [0, 0, 0, 5]
+                    },
+                    subtitle: {
+                        fontSize: 14,
+                        color: '#666666',
+                        margin: [0, 0, 0, 5]
+                    },
+                    hotline: {
+                        fontSize: 12,
+                        bold: true,
+                        color: '#D35400'
+                    },
+                    sectionHeader: {
+                        fontSize: 14,
+                        bold: true,
+                        color: '#2B3E50',
+                        margin: [0, 0, 0, 10]
+                    },
+                    tableHeader: {
+                        fontSize: 10,
+                        bold: true,
+                        color: 'white',
+                        fillColor: '#2B3E50',
+                        margin: [5, 5, 5, 5]
+                    },
+                    tableCell: {
+                        fontSize: 9,
+                        margin: [5, 5, 5, 5]
+                    },
+                    tableCellBold: {
+                        fontSize: 9,
+                        bold: true,
+                        margin: [5, 5, 5, 5]
+                    },
+                    tableCellLink: {
+                        fontSize: 8,
+                        margin: [5, 5, 5, 5],
+                        color: '#0066CC',
+                        decoration: 'underline'
+                    },
+                    total: {
+                        fontSize: 16,
+                        bold: true,
+                        alignment: 'right'
+                    },
+                    footer: {
+                        fontSize: 10,
+                        italics: true,
+                        color: '#2B3E50',
+                        alignment: 'center'
+                    }
                 }
-            }
-
-            const fileName = customerName ? 
-                `bao-gia-sanko-${customerName.replace(/\s+/g, '-').toLowerCase()}.pdf` : 
-                'bao-gia-sanko.pdf';
+            };
             
-            pdf.save(fileName);
+            // Generate filename
+            const fileName = customerName ? 
+                `bao-gia-sanko-${customerName.replace(/\\s+/g, '-').toLowerCase()}` : 
+                'bao-gia-sanko';
+            
+            // Export based on format
+            if (format === 'excel') {
+                // Convert PDFMake docDefinition to Excel
+                await convertPDFMakeToExcel(docDefinition, fileName + '.xlsx');
+            } else {
+                // Generate PDF (default)
+                pdfMake.createPdf(docDefinition).download(fileName + '.pdf');
+            }
         }
 
-        // =============== UTILITY FUNCTIONS ===============
+        // Helper function to convert PDFMake docDefinition to Excel format
+        async function convertPDFMakeToExcel(docDefinition, fileName) {
+            // Convert PDFMake structure to Excel-compatible data
+            const wsData = [];
+            
+            // Add header info with logo placeholder (Excel doesn't support embedded images easily)
+            wsData.push(['SANKO LOGO', '', '', '', 'BẢNG BÁO GIÁ']);
+            wsData.push(['', '', '', '', 'SANKO - Tủ bếp Inox hệ Module']);
+            wsData.push(['', '', '', '', 'Hotline: 0844 803 777']);
+            wsData.push(['']);
+            
+            // Add date from content
+            const dateContent = docDefinition.content.find(item => 
+                typeof item === 'object' && item.text && item.text.includes('Ngày lập')
+            );
+            if (dateContent) {
+                wsData.push([dateContent.text]);
+            }
+            wsData.push(['']);
+            
+            // Add customer info if exists
+            const customerContent = docDefinition.content.find(item => 
+                item.table && item.table.body && item.table.body[0][0].stack &&
+                item.table.body[0][0].stack.some(s => s.text === 'THÔNG TIN KHÁCH HÀNG')
+            );
+            if (customerContent) {
+                wsData.push(['THÔNG TIN KHÁCH HÀNG']);
+                const customerStack = customerContent.table.body[0][0].stack;
+                customerStack.forEach(item => {
+                    if (item.text && (item.text.includes('Tên khách hàng') || item.text.includes('Số điện thoại'))) {
+                        wsData.push([item.text]);
+                    }
+                });
+                wsData.push(['']);
+            }
+            
+            // Add products table from docDefinition
+            const productsTable = docDefinition.content.find(item => 
+                item.table && item.table.headerRows === 1
+            );
+            if (productsTable) {
+                // Add headers
+                const headers = productsTable.table.body[0].map(cell => cell.text);
+                wsData.push(headers);
+                
+                // Add data rows
+                productsTable.table.body.slice(1).forEach(row => {
+                    const rowData = row.map(cell => {
+                        if (typeof cell.text === 'string') {
+                            return cell.text.replace(/\\n/g, ' '); // Convert newlines to spaces for Excel
+                        }
+                        return cell.text || '';
+                    });
+                    wsData.push(rowData);
+                });
+            }
+            
+            // Add total from docDefinition
+            wsData.push(['']);
+            const totalContent = docDefinition.content.find(item => 
+                item.table && item.table.body && item.table.body[0][1] && 
+                item.table.body[0][1].text && item.table.body[0][1].text.includes('TỔNG TIỀN')
+            );
+            if (totalContent) {
+                wsData.push(['', '', '', '', '', '', '', totalContent.table.body[0][1].text]);
+            }
+            
+            // Create workbook and worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            
+            // Apply enhanced styling (colors should work now!)
+            applyUnifiedExcelFormatting(ws, productsTable ? productsTable.table.body.length - 1 : 0, !!customerContent);
+            
+            // Add worksheet to workbook and export
+            XLSX.utils.book_append_sheet(wb, ws, 'Báo giá SANKO');
+            XLSX.writeFile(wb, fileName);
+        }
+
+        // Enhanced Excel formatting to match PDF styling
+        function applyUnifiedExcelFormatting(ws, itemCount, hasCustomerInfo) {
+            // Set column widths
+            const colWidths = [
+                { wch: 5 },  // STT
+                { wch: 18 }, // TÊN MODULE (reduced from 25)
+                { wch: 12 }, // THÔNG SỐ
+                { wch: 15 }, // HÌNH ẢNH (increased from 12)
+                { wch: 25 }, // LINK HÌNH ẢNH (new column)
+                { wch: 12 }, // GIÁ
+                { wch: 8 },  // SL
+                { wch: 15 }  // THÀNH TIỀN
+            ];
+            ws['!cols'] = colWidths;
+            
+            // Calculate row positions
+            let headerRowIndex = hasCustomerInfo ? 9 : 6;
+            let dataStartRow = headerRowIndex + 1;
+            let totalRowIndex = dataStartRow + itemCount + 1;
+            
+            // Helper function to get cell address
+            const getCellAddr = (row, col) => XLSX.utils.encode_cell({ r: row, c: col });
+            
+            // CRITICAL: Use correct XLSX color format
+            const colors = {
+                darkBlue: "2B3E50",
+                lightBlue: "E8F4FD", 
+                mediumBlue: "34495E",
+                orange: "D35400",
+                lightGray: "F7F9FB",
+                white: "FFFFFF",
+                borderGray: "E0E0E0"
+            };
+            
+            // Format logo area (A1:C3)
+            for (let row = 0; row <= 2; row++) {
+                for (let col = 0; col <= 2; col++) {
+                    const cellAddr = getCellAddr(row, col);
+                    if (!ws[cellAddr]) ws[cellAddr] = { v: row === 1 && col === 1 ? 'SANKO LOGO' : '' };
+                    ws[cellAddr].s = {
+                        font: { bold: true, sz: 14, color: { rgb: colors.darkBlue } },
+                        fill: { fgColor: { rgb: colors.lightBlue } },
+                        alignment: { horizontal: "center", vertical: "center" },
+                        border: {
+                            top: { style: "thick", color: { rgb: colors.darkBlue } },
+                            bottom: { style: "thick", color: { rgb: colors.darkBlue } },
+                            left: { style: "thick", color: { rgb: colors.darkBlue } },
+                            right: { style: "thick", color: { rgb: colors.darkBlue } }
+                        }
+                    };
+                }
+            }
+            
+            // Format header section (E1:F3) 
+            const headerTexts = ['BẢNG BÁO GIÁ', 'SANKO - Tủ bếp Inox hệ Module', 'Hotline: 0844 803 777'];
+            const headerColors = [colors.darkBlue, colors.mediumBlue, colors.orange];
+            
+            for (let row = 0; row <= 2; row++) {
+                for (let col = 4; col <= 5; col++) {
+                    const cellAddr = getCellAddr(row, col);
+                    if (!ws[cellAddr]) ws[cellAddr] = { v: col === 4 ? headerTexts[row] : '' };
+                    ws[cellAddr].s = {
+                        font: { bold: true, sz: row === 0 ? 18 : 12, color: { rgb: colors.white } },
+                        fill: { fgColor: { rgb: headerColors[row] } },
+                        alignment: { horizontal: "center", vertical: "center" }
+                    };
+                }
+            }
+            
+            // Set merges
+            if (!ws['!merges']) ws['!merges'] = [];
+            ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 2, c: 2 } }); // Logo area
+            ws['!merges'].push({ s: { r: 0, c: 4 }, e: { r: 0, c: 7 } }); // Title (extended for 8 cols)
+            ws['!merges'].push({ s: { r: 1, c: 4 }, e: { r: 1, c: 7 } }); // Subtitle  
+            ws['!merges'].push({ s: { r: 2, c: 4 }, e: { r: 2, c: 7 } }); // Hotline
+            
+            // Format table headers with DARK BLUE background
+            for (let col = 0; col < 8; col++) { // Updated to 8 columns
+                const cellAddr = getCellAddr(headerRowIndex, col);
+                if (!ws[cellAddr]) ws[cellAddr] = { v: '' };
+                ws[cellAddr].s = {
+                    font: { bold: true, sz: 11, color: { rgb: colors.white } },
+                    fill: { fgColor: { rgb: colors.darkBlue } },
+                    alignment: { horizontal: "center", vertical: "center" },
+                    border: {
+                        top: { style: "thin", color: { rgb: colors.white } },
+                        bottom: { style: "thin", color: { rgb: colors.white } },
+                        left: { style: "thin", color: { rgb: colors.white } },
+                        right: { style: "thin", color: { rgb: colors.white } }
+                    }
+                };
+            }
+            
+            // Format data rows with alternating colors
+            for (let row = dataStartRow; row < dataStartRow + itemCount; row++) {
+                const isEvenRow = (row - dataStartRow) % 2 === 0;
+                const bgColor = isEvenRow ? colors.lightGray : colors.white;
+                
+                for (let col = 0; col < 8; col++) { // Updated to 8 columns
+                    const cellAddr = getCellAddr(row, col);
+                    if (!ws[cellAddr]) ws[cellAddr] = { v: '' };
+                    
+                    let style = {
+                        fill: { fgColor: { rgb: bgColor } },
+                        border: {
+                            top: { style: "thin", color: { rgb: colors.borderGray } },
+                            bottom: { style: "thin", color: { rgb: colors.borderGray } },
+                            left: { style: "thin", color: { rgb: colors.borderGray } },
+                            right: { style: "thin", color: { rgb: colors.borderGray } }
+                        }
+                    };
+                    
+                    // Column-specific formatting
+                    if (col === 0) { // STT
+                        style.alignment = { horizontal: "center" };
+                    } else if (col === 3) { // HÌNH ẢNH column
+                        style.alignment = { horizontal: "center" };
+                        style.font = { sz: 8, color: { rgb: colors.darkBlue } };
+                    } else if (col === 4) { // LINK HÌNH ẢNH column
+                        style.alignment = { horizontal: "left" };
+                        style.font = { sz: 8, color: { rgb: colors.orange } }; // Orange for links
+                    } else if (col === 5 || col === 7) { // Price columns (moved due to new columns)
+                        style.numFmt = "#,##0";
+                        style.alignment = { horizontal: "right" };
+                        style.font = { color: { rgb: colors.orange } };
+                    } else if (col === 6) { // Quantity (moved due to new columns)
+                        style.alignment = { horizontal: "center" };
+                    }
+                    
+                    ws[cellAddr].s = style;
+                }
+            }
+            
+            // Format total row with DARK BLUE background
+            for (let col = 6; col <= 7; col++) { // Updated positions for 8-column layout
+                const cellAddr = getCellAddr(totalRowIndex, col);
+                if (!ws[cellAddr]) ws[cellAddr] = { v: col === 6 ? 'TỔNG TIỀN:' : '' };
+                ws[cellAddr].s = {
+                    font: { bold: true, sz: 14, color: { rgb: colors.white } },
+                    fill: { fgColor: { rgb: colors.darkBlue } },
+                    alignment: { horizontal: col === 6 ? "center" : "right" },
+                    numFmt: col === 7 ? "#,##0" : undefined,
+                    border: {
+                        top: { style: "thick", color: { rgb: colors.darkBlue } },
+                        bottom: { style: "thick", color: { rgb: colors.darkBlue } },
+                        left: { style: "thick", color: { rgb: colors.darkBlue } },
+                        right: { style: "thick", color: { rgb: colors.darkBlue } }
+                    }
+                };
+            }
+            
+            // Set row heights
+            if (!ws['!rows']) ws['!rows'] = [];
+            ws['!rows'][0] = { hpt: 30 }; // Header rows
+            ws['!rows'][1] = { hpt: 25 };
+            ws['!rows'][2] = { hpt: 25 };
+            ws['!rows'][headerRowIndex] = { hpt: 25 }; // Table header 
+            ws['!rows'][totalRowIndex] = { hpt: 25 }; // Total row
+        }
+
         function formatPrice(price) {
             return new Intl.NumberFormat('vi-VN').format(price);
         }
@@ -1891,20 +1958,16 @@
             
             const validCustomProducts = customProducts.filter(p => p.name.trim() && p.price > 0);
             validCustomProducts.forEach(product => {
-                product.quantity = 1; // Ensure custom products have quantity
+                product.quantity = 1;
                 product.subtotal = product.price;
             });
             return [...selectedItems, ...validCustomProducts];
         }
         
         function calculateTotal(items) {
-            return items.reduce((sum, item) => {
-                return sum + (item.subtotal || (item.price * item.quantity));
-            }, 0);
+            return items.reduce((sum, item) => sum + (item.subtotal || (item.price * item.quantity)), 0);
         }
 
-        // =============== CUSTOM PRODUCTS FUNCTIONS ===============
-        // Unified custom product management
         function manageCustomProduct(action, customId = null, field = null, value = null) {
             switch (action) {
                 case 'add':
@@ -1917,11 +1980,9 @@
                         quantity: 1
                     });
                     break;
-                    
                 case 'remove':
                     customProducts = customProducts.filter(p => p.id !== customId);
                     break;
-                    
                 case 'update':
                     const product = customProducts.find(p => p.id === customId);
                     if (product) {
@@ -1936,8 +1997,6 @@
             renderCustomProducts();
             updateUI();
         }
-
-        // Wrapper functions for backward compatibility
         function addCustomProduct() {
             manageCustomProduct('add');
         }
@@ -1984,7 +2043,6 @@
             `).join('');
         }
 
-        // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('quoteModal');
             if (event.target === modal) {
